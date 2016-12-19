@@ -13,6 +13,9 @@ class RefCls():
     def get_5(self):
         return 5
 
+    def get_array(self):
+        return list(range(10))
+
     def string_num(self, num):
         print("In string num, num_arg: {}".format(num))
         return str(num)

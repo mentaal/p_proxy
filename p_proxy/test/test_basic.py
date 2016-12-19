@@ -29,6 +29,17 @@ def test_async(p_obj):
     results = p_obj._get_last(5)
     assert results == [str(n) for n in range(5, 10)]
 
+def test_get_array(p_obj):
+    a = p_obj.get_array()
+    assert a == list(range(10))
+
+def test_get_array_async(p_obj):
+    for i in range(5):
+        p_obj.get_array(_async=True)
+    a = p_obj._get_last()[0] #_get_last returns a list
+    assert a == list(range(10))
+
+
 
 def test_async_exc(p_obj):
     with pytest.raises(IndexError):

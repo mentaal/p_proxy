@@ -3,6 +3,7 @@ from multiprocessing import Process, Queue
 import logging
 import inspect
 from inspect import Signature
+import signal
 import traceback
 
 logger = logging.getLogger(__name__)
@@ -11,12 +12,19 @@ logger = logging.getLogger(__name__)
 #logger.propagate = True
 #logger.setLevel(logging.DEBUG)
 
+
+# Save a reference to the original signal handler for SIGINT.
+default_handler = signal.getsignal(signal.SIGINT)
+
+
 def f(receive_q, send_q, cls, cls_args, cls_kwargs):
+    # Set signal handling of SIGINT to ignore mode.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     #initialize class
     c = cls(*cls_args, **cls_kwargs)
     while True:
         tn_num, op, attr, args, kwargs = receive_q.get()
-        print("Worker: tn_num: {}, op: {}, attr: {}".format(tn_num, op, attr))
+        #print("Worker: tn_num: {}, op: {}, attr: {}".format(tn_num, op, attr))
         result = None
         exc = None
         try:
@@ -24,18 +32,18 @@ def f(receive_q, send_q, cls, cls_args, cls_kwargs):
                 send_q.put((tn_num, result, None))
                 return
             if op == 'set':
-                print("attr now: {}, args now:{}".format(attr, args))
+                #print("attr now: {}, args now:{}".format(attr, args))
                 setattr(c, attr, args[0])
             elif op == 'get':
                 result = getattr(c, attr)
             elif op == 'call':
                 result = getattr(c, attr)(*args, **kwargs)
         except Exception as e:
-            print("Worker: Sending exception!")
+            #print("Worker: Sending exception!")
             e.tb = traceback.format_exc()
             send_q.put((tn_num, result, e))
         else:
-            print("Worker: Sending result...")
+            #print("Worker: Sending result...")
             send_q.put((tn_num, result, None))
 
 
@@ -47,7 +55,7 @@ class PProxy():
         another process
         3)launch handler task in another process
         '''
-    def __init__(self, cls, *, cls_args=(), cls_kwargs=None):
+    def __init__(self, cls, *cls_args, **cls_kwargs):
         self._tn_num = 0
         self._num_in_flight = 0
         self._send_q    = Queue()
@@ -69,6 +77,7 @@ class PProxy():
                 f = lambda *args, _async=False, **kwargs: self._issue_tn(
                         'call', n, *args, async=_async, **kwargs)
                 f.__signature__ = Signature.from_callable(func)
+                f.__doc__ = func.__doc__
                 return f
             super().__setattr__(name, proxy_func())
 
@@ -88,7 +97,8 @@ class PProxy():
             if _tn_num < self._tn_num - 1:
                 old_results.append(result)
             else:
-                #print("Returning result...")
+                #print("Returning result: {}, old_results: {}".format(
+                #    result, old_results))
                 return result, old_results
 
     def _issue_tn(self, op, attr, *args, async=False, **kwargs):
@@ -120,11 +130,11 @@ class PProxy():
 
     def _get_last(self, num_items=1):
         '''get the last number of return values accumulated due to non blocking
-        transactions'''
+        transactions. Returns a list!'''
         if num_items > self._num_in_flight:
             raise IndexError("Too many return results requested")
         result, old_results = self._get_tns()
-        old_results.extend(result)
+        old_results.append(result)
         return old_results[-num_items:]
 
     def __setattr__(self, item, value):
