@@ -13,6 +13,10 @@ class RefCls():
     def get_5(self):
         return 5
 
+    def string_num(self, num):
+        print("In string num, num_arg: {}".format(num))
+        return str(num)
+
     def print_a(self):
         print("A value: {}".format(self.a))
 

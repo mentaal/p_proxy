@@ -23,6 +23,16 @@ def test_exc(p_obj):
     with pytest.raises(ValueError):
         p_obj.raise_exc()
 
+def test_async(p_obj):
+    for i in range(10):
+        p_obj.string_num(i, _async=True)
+    results = p_obj._get_last(5)
+    assert results == [str(n) for n in range(5, 10)]
 
-#def test_method_args(p_obj):
+
+def test_async_exc(p_obj):
+    with pytest.raises(IndexError):
+        results = p_obj._get_last()
+
+
 
