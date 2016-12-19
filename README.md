@@ -2,6 +2,7 @@ PProxy
 ======
 
 This class does the following:
+
 1. Creates a new child process using the multiprocessing library
 2. A worker function function instantiates the class that is to be proxied
 3. Method and attribute access gets delegated to the work function in the child
