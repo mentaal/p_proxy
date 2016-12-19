@@ -32,3 +32,18 @@ Some solutions are:
    and other metadata.
 2. Use options suggested [here](http://stackoverflow.com/questions/8804830/python-multiprocessing-pickling-error)
 
+
+Hazards
+-------
+
+Need to ensure that underlying queues are empty before exiting.
+Do this with `p_obj._pp_get_last()`
+
+see here: http://bugs.python.org/issue8426
+
+pertintant paragraph:
+
+    That's because join() will wait until the feeder thread has managed to
+    write all the items to the underlying pipe/Unix socket, and this might
+    hang if the underlying pipe/socket is full (which will happen after
+    one has put around 128K without having popped any item).
