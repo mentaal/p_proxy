@@ -5,6 +5,7 @@ import inspect
 from inspect import Signature
 import signal
 import traceback
+import atexit
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,7 @@ class PProxy():
                 self._send_q, self._receive_q, cls, cls_args, cls_kwargs))
         self._p.start()
         self._cache_funcs(cls)
+        atexit.register(self._issue_tn, 'call', '_quit_', async=True)
 
 
     def _cache_funcs(self, cls):
@@ -146,14 +148,14 @@ class PProxy():
 
     def _stop(self):
         self._issue_tn('call', '_quit_', async=True)
+        atexit.unregister(self._issue_tn)
 
 
 
 if __name__ == '__main__':
     from .test.RefCls import RefCls
-    p_obj = PProxy(RefCls, cls_args=(1,2,3))
+    p_obj = PProxy(RefCls, 1,2,3)
     p_obj.print_a()
-    p_obj.stop()
 
 
 
