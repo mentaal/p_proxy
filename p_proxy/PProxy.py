@@ -89,8 +89,8 @@ class PProxy():
         while True:
             _tn_num, result, e = self._pp_receive_q.get()
             self._pp_num_in_flight -= 1
-            logger.debug("In _pp_get_tns,_tn_num: {}. in_flight: {}".format(
-                _tn_num, self._pp_num_in_flight) + "result: {}".format(result))
+            logger.debug("In _pp_get_tns,_tn_num: %s. in_flight: %s, result: %s",
+                _tn_num, self._pp_num_in_flight, result)
             #print("Received _tn_num is: {}".format(_tn_num))
             if e:
                 print(e.tb)
@@ -104,10 +104,10 @@ class PProxy():
                 return result, old_results
 
     def _pp_issue_tn(self, op, attr, *args, async=False, **kwargs):
-        logger.debug("In _pp_issue_tn, op: {}, attr: {}".format(op, attr))
+        logger.debug("In _pp_issue_tn, op: %s, attr: %s",op, attr)
         self._pp_send_q.put((self._pp_tn_num, op, attr, args, kwargs))
         self._pp_num_in_flight += 1
-        logger.debug("In _pp_issue_tn, _pp_num_in_flight: {}".format(self._pp_num_in_flight))
+        logger.debug("In _pp_issue_tn, _pp_num_in_flight: %s",self._pp_num_in_flight)
         result = None
         self._pp_tn_num += 1
         if not async:

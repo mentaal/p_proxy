@@ -1,4 +1,6 @@
 import pytest
+import random
+import string
 def test_method(p_obj):
     p_obj.print_a()
     p_obj.print_a()
@@ -45,5 +47,14 @@ def test_async_exc(p_obj):
     with pytest.raises(IndexError):
         results = p_obj._pp_get_last()
 
+def test_short_strings(p_obj):
+    for i in range(5000):
+        s_upper = p_obj.upper(''.join(random.choices(string.printable,
+                                k=random.randint(1,100))))
 
+
+def test_long_strings(p_obj):
+    long_data = ''.join(random.choices(string.printable, k=200000))
+    for i in range(5000):
+        s_upper = p_obj.upper(long_data[:random.randint(100000,200000)])
 

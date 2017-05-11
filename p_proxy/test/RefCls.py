@@ -25,3 +25,6 @@ class RefCls():
 
     def raise_exc(self):
         raise ValueError("Test exception..")
+
+    def upper(self, s):
+        return s.upper()
